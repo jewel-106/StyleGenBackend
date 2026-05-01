@@ -2,6 +2,8 @@ import express from "express";
 import connectDatabase from "./config/database.js";
 import User from "./models/userModel.js";
 import Product from "./models/productModel.js";
+import productRoutes from "./routes/productRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 const app = express();
 const port = 4000;
@@ -19,32 +21,10 @@ async function register(req, res) {
     user,
   });
 }
-async function createProduct(req, res) {
-  const { name, price, discountPrice, description, stock, image } = req.body;
-  const product = await Product.create({
-    name,
-    price,
-    discountPrice,
-    description,
-    stock,
-    image,
-  });
-  res.json({
-    message: "Product created successfully",
-    product,
-  });
-}
-async function getProducts(req, res) {
-  const products = await Product.find();
-  res.json({
-    message: "Products fetched successfully",
-    products,
-  });
-}
 
 app.post("/register", register);
-app.post("/products", createProduct);
-app.get("/products", getProducts);
+app.use("/products", productRoutes);
+app.use("/category", categoryRoutes);
 
 connectDatabase();
 
