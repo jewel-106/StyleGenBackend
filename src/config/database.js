@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const connectDatabase = () => {
+const connectDatabase = async () => {
   try {
-    mongoose.connect("mongodb://127.0.0.1:27017/ecom");
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected");
   } catch (error) {
     console.log(error);

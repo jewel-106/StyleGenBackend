@@ -1,15 +1,13 @@
 import express from "express";
-import {
-  createProduct,
-  getProducts,
-  getProductByID,
-} from "../controllers/productController.js";
-import { get } from "mongoose";
+import { createProduct, getProducts, getProductByID, updateProduct, deleteProduct } from "../controllers/productController.js";
+import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 
-const productRoutes = express.Router();
+const router = express.Router();
 
-productRoutes.get("/", getProducts);
-productRoutes.post("/", createProduct);
-productRoutes.get("/:id", getProductByID);
+router.get("/", getProducts);
+router.get("/:id", getProductByID);
+router.post("/", protect, adminOnly, createProduct);
+router.put("/:id", protect, adminOnly, updateProduct);
+router.delete("/:id", protect, adminOnly, deleteProduct);
 
-export default productRoutes;
+export default router;

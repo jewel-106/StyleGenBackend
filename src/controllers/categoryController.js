@@ -1,32 +1,47 @@
 import Category from "../models/categoryModel.js";
 
 async function createCategory(req, res) {
-  const { name, description } = req.body;
-  const category = await Category.create({
-    name,
-    description,
-  });
-  res.json({
-    message: "Category created successfully",
-    category,
-  });
+  try {
+    const { name, description } = req.body;
+    const category = await Category.create({ 
+        name, 
+        description, 
+        user: req.user.id 
+    });
+    res.status(201).json({ message: "Category created successfully", category });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }
 
 async function getCategories(req, res) {
-  const categories = await Category.find();
-  res.json({
-    message: "Categories fetched successfully",
-    categories,
-  });
+  try {
+    const categories = await Category.find().populate("user", "name email");
+    res.json({ message: "Categories fetched successfully", categories });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+async function updateCategory(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    const category = await Category.findByIdAndUpdate(id, { name, description }, { new: true });
+    res.json({ message: "Category updated successfully", category });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }
 
 async function deleteCategory(req, res) {
-  const { id } = req.params;
-  const category = await Category.findOneAndDelete({ _id: id });
-  res.json({
-    message: "Category deleted successfully",
-    category,
-  });
+  try {
+    const { id } = req.params;
+    const category = await Category.findByIdAndDelete(id);
+    res.json({ message: "Category deleted successfully", category });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }
 
-export { createCategory, getCategories, deleteCategory };
+export { createCategory, getCategories, updateCategory, deleteCategory };

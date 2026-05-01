@@ -1,30 +1,25 @@
 import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 import connectDatabase from "./config/database.js";
-import User from "./models/userModel.js";
-import Product from "./models/productModel.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+
+dotenv.config();
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
+
+app.use(cors());
 app.use(express.json());
 
-async function register(req, res) {
-  const { name, email, password } = req.body;
-  const user = await User.create({
-    name,
-    email,
-    password,
-  });
-  res.json({
-    message: "User registered successfully",
-    user,
-  });
-}
-
-app.post("/register", register);
-app.use("/products", productRoutes);
-app.use("/category", categoryRoutes);
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/orders", orderRoutes);
 
 connectDatabase();
 
