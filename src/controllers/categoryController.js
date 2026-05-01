@@ -3,12 +3,14 @@ import Category from "../models/categoryModel.js";
 async function createCategory(req, res) {
   try {
     const { name, description } = req.body;
-    const category = await Category.create({ 
-        name, 
-        description, 
-        user: req.user.id 
+    const category = await Category.create({
+      name,
+      description,
+      user: req.user.id,
     });
-    res.status(201).json({ message: "Category created successfully", category });
+    res
+      .status(201)
+      .json({ message: "Category created successfully", category });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -16,7 +18,7 @@ async function createCategory(req, res) {
 
 async function getCategories(req, res) {
   try {
-    const categories = await Category.find().populate("user", "name email");
+    const categories = await Category.find();
     res.json({ message: "Categories fetched successfully", categories });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -27,7 +29,11 @@ async function updateCategory(req, res) {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
-    const category = await Category.findByIdAndUpdate(id, { name, description }, { new: true });
+    const category = await Category.findByIdAndUpdate(
+      id,
+      { name, description },
+      { new: true },
+    );
     res.json({ message: "Category updated successfully", category });
   } catch (error) {
     res.status(500).json({ message: error.message });
