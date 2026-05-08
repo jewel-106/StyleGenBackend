@@ -2,16 +2,22 @@ import Product from "../models/productModel.js";
 
 async function createProduct(req, res) {
   try {
-    const { name, price, discountPrice, description, stock, image, category } = req.body;
-    const product = await Product.create({ 
-        name, 
-        price, 
-        discountPrice, 
-        description, 
-        stock, 
-        image, 
-        category,
-        user: req.user.id 
+    const { name, price, discountPrice, description, stock, category } = req.body;
+    let image = req.body.image;
+
+    if (req.file) {
+      image = `/uploads/${req.file.filename}`;
+    }
+
+    const product = await Product.create({
+      name,
+      price,
+      discountPrice,
+      description,
+      stock,
+      image,
+      category,
+      user: req.user.id
     });
     res.status(201).json({ message: "Product created successfully", product });
   } catch (error) {
@@ -42,7 +48,13 @@ async function getProductByID(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const product = await Product.findByIdAndUpdate(id, req.body, { new: true });
+    let updateData = { ...req.body };
+
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+    }
+
+    const product = await Product.findByIdAndUpdate(id, updateData, { new: true });
     res.json({ message: "Product updated successfully", product });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -21,4 +21,7 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 
+// Serving uploads folder
+app.use("/uploads", express.static("src/uploads"));
+
 export default app;
