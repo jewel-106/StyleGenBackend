@@ -13,10 +13,10 @@ async function createProduct(req, res) {
 
     const product = await Product.create({
       name,
-      price,
-      discountPrice,
+      price: price || 0,
+      discountPrice: discountPrice || 0,
       description,
-      stock,
+      stock: stock || 0,
       image,
       categoryId: category,
       userId: req.user.id
@@ -65,6 +65,11 @@ async function updateProduct(req, res) {
     if (req.file) {
       updateData.image = `/uploads/${req.file.filename}`;
     }
+
+    // Handle empty strings for numeric fields
+    if (updateData.price === '') updateData.price = 0;
+    if (updateData.discountPrice === '') updateData.discountPrice = 0;
+    if (updateData.stock === '') updateData.stock = 0;
 
     // Handle Mongoose 'category' field mapping to Sequelize 'categoryId' if present
     if (updateData.category) {
