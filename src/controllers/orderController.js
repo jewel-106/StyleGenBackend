@@ -1,4 +1,5 @@
 import Order from "../models/orderModel.js";
+import User from "../models/userModel.js";
 
 export const createOrder = async (req, res) => {
   try {
@@ -8,14 +9,13 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "No order items" });
     }
 
-    const order = new Order({
+    const createdOrder = await Order.create({
       orderItems,
-      user: req.user.id,
+      userId: req.user.id,
       shippingAddress,
       totalPrice,
     });
 
-    const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -24,7 +24,9 @@ export const createOrder = async (req, res) => {
 
 export const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate("user", "name email");
+    const order = await Order.findByPk(req.params.id, {
+      include: [{ model: User, attributes: ["name", "email"] }]
+    });
 
     if (order) {
       res.json(order);
@@ -38,7 +40,7 @@ export const getOrderById = async (req, res) => {
 
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id });
+    const orders = await Order.findAll({ where: { userId: req.user.id } });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -47,7 +49,9 @@ export const getMyOrders = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).populate("user", "id name");
+    const orders = await Order.findAll({
+      include: [{ model: User, attributes: ["id", "name"] }]
+    });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -56,15 +60,18 @@ export const getAllOrders = async (req, res) => {
 
 export const updateOrderStatus = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const { id } = req.params;
+    const { status } = req.body;
 
-    if (order) {
-      order.status = req.body.status || order.status;
-      const updatedOrder = await order.save();
-      res.json(updatedOrder);
-    } else {
-      res.status(404).json({ message: "Order not found" });
-    }
+    const [updatedRows] = await Order.update(
+      { status },
+      { where: { id } }
+    );
+
+    if (updatedRows === 0) return res.status(404).json({ message: "Order not found or no changes made" });
+
+    const updatedOrder = await Order.findByPk(id);
+    res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

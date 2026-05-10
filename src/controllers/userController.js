@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.findAll({ attributes: { exclude: ['password'] } });
     res.json({ message: "Users fetched successfully", users });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -12,7 +12,7 @@ export const getUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findByPk(req.params.id, { attributes: { exclude: ['password'] } });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -26,7 +26,7 @@ export const createUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ where: { email } });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -43,7 +43,7 @@ export const createUser = async (req, res) => {
 
     res.status(201).json({
       message: "User created successfully",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -53,27 +53,31 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    const user = await User.findById(req.params.id);
+    const user = await User.findByPk(req.params.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.name = name || user.name;
-    user.email = email || user.email;
-    user.role = role || user.role;
+    const updateData = {
+      name: name || user.name,
+      email: email || user.email,
+      role: role || user.role,
+    };
 
     if (password) {
       const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      updateData.password = await bcrypt.hash(password, salt);
     }
 
-    const updatedUser = await user.save();
+    await User.update(updateData, { where: { id: req.params.id } });
+
+    const updatedUser = await User.findByPk(req.params.id);
 
     res.json({
       message: "User updated successfully",
       user: {
-        id: updatedUser._id,
+        id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
@@ -86,10 +90,12 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    await User.destroy({ where: { id: req.params.id } });
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -24,5 +24,5 @@ app.listen(port, "0.0.0.0", () => {
   console.log(`\n🚀 Server is running on:`);
   console.log(`   - Local:    http://localhost:${port}`);
   console.log(`   - Network:  http://${host}:${port}`);
-  console.log(`\n✅ MongoDB Atlas Connected Successfully\n`);
+  console.log(`\n✅ MySQL Database Connected Successfully\n`);
 });
